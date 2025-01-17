@@ -20,6 +20,7 @@ func (s *Ship) NewShip() {
 	s.Width = w
 	s.Height = h
 	roomMatrix := make([][]Room, h)
+	createdRooms := make(map[string]int)
 	for i := range h {
 		roomMatrix[i] = make([]Room, w)
 		for j := range w {
@@ -42,7 +43,9 @@ func (s *Ship) NewShip() {
 			}
 			// fmt.Printf("\ni: %d, j: %d  ", i, j)
 			// fmt.Println(edges)
-			r.NewRoom(edges)
+			for r.NewRoom(edges); createdRooms[r.Type] >= r.MaxAmmount; r.NewRoom(edges) {
+			}
+			createdRooms[r.Type] += 1
 			roomMatrix[i][j] = r
 		}
 	}
@@ -70,6 +73,7 @@ type Room struct {
 	Render       string
 	Contains     []Item
 	Walls        map[Direction]Wall
+	MaxAmmount   int
 }
 
 // Direction of either north, south, east, or west
@@ -139,13 +143,27 @@ func (r *Room) NewRoom(edges map[Direction]bool) {
 
 var RoomTypes = map[string]Room{
 	"empty": {
-		Type:     "empty",
-		Render:   "E",
-		Contains: nil,
+		Type:       "empty",
+		Render:     "E",
+		Contains:   nil,
+		MaxAmmount: 100,
 	},
 	"gun": {
-		Type:     "gun",
-		Render:   "X",
-		Contains: []Item{&Gun{}},
+		Type:       "gun",
+		Render:     "G",
+		Contains:   []Item{&Gun{}},
+		MaxAmmount: 3,
+	},
+	"blocked": {
+		Type:       "blocked",
+		Render:     "B",
+		Contains:   nil,
+		MaxAmmount: 2,
+	},
+	"vent": {
+		Type:       "vent",
+		Render:     "V",
+		Contains:   nil,
+		MaxAmmount: 2,
 	},
 }

@@ -4,32 +4,47 @@ import "math/rand/v2"
 
 type Player struct {
 	PosX, PosY int
-	Class
+	Type       string
+	HP         int
+	Strength   int
+	Perks      []Perk
+	Luck       int
+	// x, y T if explored, F if not
+	Explored [][]bool
 }
 
-type Soldier struct {
+func (p *Player) Init(s Ship) {
 }
 
-type Class struct {
-	Type     string
-	HP       int
-	Strength int
-	Perks    []Perk
-	Luck     int
+// moves player spaces in x, y dir
+func (p *Player) Move(xmod, ymod int) {
+	p.PosX += xmod
+	p.PosY += ymod
 }
 
-// Returns a class of type soldier
-func (c Class) NewSoldier() Class {
-	HPmod := rand.IntN(3)
-	Strmod := rand.IntN(3)
-	Luckmod := rand.IntN(1)
-	return Class{
-		Type:     "soldier",
-		HP:       5 + HPmod,
-		Strength: 5 + Strmod,
-		Luck:     2 + Luckmod,
-	}
+type Class interface {
+	Init()
 }
 
-type Perk struct {
+type Soldier Player
+type Medic Player
+
+func (s *Soldier) Init() {
+	s.Type = "soldier"
+	s.HP = 5 + rand.IntN(3)
+	s.Strength = 5 + rand.IntN(3)
+	s.Luck = 2 + rand.IntN(1)
+}
+
+func (s *Medic) Init() {
+	s.Type = "medic"
+	s.HP = 7 + rand.IntN(4)
+	s.Strength = 2 + rand.IntN(3)
+	s.Luck = 3 + rand.IntN(2)
+}
+
+type Perk interface {
+	Before()
+	During()
+	After()
 }

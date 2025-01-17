@@ -27,4 +27,27 @@ func (g *Gun) Use() bool {
 }
 
 func (g *Gun) Pickup() {
+	g.Init()
+}
+
+type Flashlight struct {
+	Battery int
+	On      bool
+}
+
+func (f *Flashlight) Init() {
+	f.Battery = 20 + rand.IntN(80)
+	f.On = true
+}
+
+func (f *Flashlight) Use() {
+	if !f.On && f.Battery > 0 {
+		f.On = true
+	} else {
+		f.On = false
+	}
+}
+
+func (f *Flashlight) Pickup() {
+	f.Init()
 }
