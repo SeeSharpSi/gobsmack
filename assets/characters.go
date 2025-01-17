@@ -3,6 +3,10 @@ package assets
 import "math/rand/v2"
 
 type Player struct {
+	// North South East West
+	Facing     string
+	Alive      bool
+	TurnOver   bool
 	PosX, PosY int
 	Type       string
 	HP         int
@@ -11,15 +15,77 @@ type Player struct {
 	Luck       int
 	// x, y T if explored, F if not
 	Explored [][]bool
+	Items    []Item
 }
 
 func (p *Player) Init(s Ship) {
+	p.Alive = true
+	p.TurnOver = false
 }
 
 // moves player spaces in x, y dir
-func (p *Player) Move(xmod, ymod int) {
-	p.PosX += xmod
-	p.PosY += ymod
+func (p *Player) Move(dir string) bool {
+	switch dir {
+	case "forwards":
+		switch p.Facing {
+		case "north":
+			p.PosY++
+		case "south":
+			p.PosY--
+		case "east":
+			p.PosX++
+		case "west":
+			p.PosX--
+		default:
+			return false
+		}
+	case "backwards":
+		switch p.Facing {
+		case "north":
+			p.PosY--
+		case "south":
+			p.PosY++
+		case "east":
+			p.PosX--
+		case "west":
+			p.PosX++
+		default:
+			return false
+		}
+	case "left":
+		switch p.Facing {
+		case "north":
+			p.PosX--
+		case "south":
+			p.PosX++
+		case "east":
+			p.PosY++
+		case "west":
+			p.PosY--
+		default:
+			return false
+		}
+	case "right":
+		switch p.Facing {
+		case "north":
+			p.PosX++
+		case "south":
+			p.PosX--
+		case "east":
+			p.PosY--
+		case "west":
+			p.PosY++
+		default:
+			return false
+		}
+	default:
+		return false
+	}
+	return false
+}
+
+func (p *Player) Pass() bool {
+	return true
 }
 
 type Class interface {
@@ -44,7 +110,6 @@ func (s *Medic) Init() {
 }
 
 type Perk interface {
-	Before()
-	During()
-	After()
+	BeforeRolls()
+	AfterRolls()
 }

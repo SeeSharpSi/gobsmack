@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
 	"unsafe"
@@ -20,7 +21,11 @@ import (
 )
 
 type Games struct {
+	// Takes a gamekey
 	Progs map[string]*gamestate.Game
+
+	// Takes a useragent
+	Players map[string]*gamestate.Game
 }
 
 var games = Games{}
@@ -31,7 +36,7 @@ func tmp() {
 	//fmt.Println(tmpShip.RenderHTML())
 
 	g := gamestate.Game{}
-	g.StartAGame()
+	g.StartGame()
 	g.Listener()
 	fmt.Println("hello world")
 }
@@ -77,6 +82,7 @@ func add_routes(mux *http.ServeMux) {
 	mux.HandleFunc("/test", GetTest)
 	mux.HandleFunc("/game", SpawnGame)
 	mux.HandleFunc("/loop", LoopGames)
+	mux.HandleFunc("/action/{type}/{with}", Action)
 }
 
 func ServeStatic(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +116,7 @@ func SpawnGame(w http.ResponseWriter, r *http.Request) {
 	g := gamestate.Game{}
 	g.GameKey = gamekey
 	games.Progs[gamekey] = &g
+	games.Players[r.RemoteAddr] = &g
 }
 
 func LoopGames(w http.ResponseWriter, r *http.Request) {
@@ -118,9 +125,22 @@ func LoopGames(w http.ResponseWriter, r *http.Request) {
 	component.Render(context.Background(), w)
 	for _, v := range games.Progs {
 		fmt.Printf("\n%+v\n", v)
-		v.StartAGame()
+		v.StartGame()
 	}
 	fmt.Printf("\n%+v\n", games)
+}
+
+func Action(w http.ResponseWriter, r *http.Request) {
+	atype := r.PathValue("type")
+	donewith := r.PathValue("with")
+	intdonewith, err := strconv.Atoi(donewith)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	player := r.RemoteAddr
+	rgame := games.Players[player]
+	rgame.QueueAction(player, atype, intdonewith)
 }
 
 func keygen(n int) string {
@@ -146,4 +166,31 @@ func keygen(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+func printContextInternals(ctx interface{}, inner bool) {
+	contextValues := reflect.ValueOf(ctx).Elem()
+	contextKeys := reflect.TypeOf(ctx).Elem()
+
+	if !inner {
+		fmt.Printf("\nFields for %s.%s\n", contextKeys.PkgPath(), contextKeys.Name())
+	}
+
+	if contextKeys.Kind() == reflect.Struct {
+		for i := 0; i < contextValues.NumField(); i++ {
+			reflectValue := contextValues.Field(i)
+			reflectValue = reflect.NewAt(reflectValue.Type(), unsafe.Pointer(reflectValue.UnsafeAddr())).Elem()
+
+			reflectField := contextKeys.Field(i)
+
+			if reflectField.Name == "Context" {
+				printContextInternals(reflectValue.Interface(), true)
+			} else {
+				fmt.Printf("field name: %+v\n", reflectField.Name)
+				fmt.Printf("value: %+v\n", reflectValue.Interface())
+			}
+		}
+	} else {
+		fmt.Printf("context is empty (int)\n")
+	}
 }
