@@ -4,16 +4,24 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 
+	"seesharpsi/gobsmack/assets"
 	"seesharpsi/gobsmack/templ"
 )
 
 func main() {
+	tmpShip := assets.Ship{}
+	tmpShip.NewShip()
+	fmt.Println(tmpShip.RenderHTML())
+}
+
+func tmp() {
 	port := flag.Int("port", 9779, "port the server runs on")
 	address := flag.String("address", "http://localhost", "address the server runs on")
 	flag.Parse()
@@ -48,7 +56,7 @@ func main() {
 
 func add_routes(mux *http.ServeMux) {
 	mux.HandleFunc("/", GetIndex)
-    mux.HandleFunc("/static/{file}", ServeStatic)
+	mux.HandleFunc("/static/{file}", ServeStatic)
 	mux.HandleFunc("/test", GetTest)
 }
 
