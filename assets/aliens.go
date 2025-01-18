@@ -6,6 +6,7 @@ type Alien interface {
 	Init()
 	Damage()
 	Heal()
+	Roll()
 }
 
 // GenericAlien alien type
@@ -29,6 +30,9 @@ func (a *GenericAlien) Damange() {
 func (a *GenericAlien) Heal() {
 }
 
+func (a *GenericAlien) Roll() {
+}
+
 // Inits a GaurdAlien alien. HP is 5-7
 func (a *GaurdAlien) Init() {
 	a.Type = "gaurd"
@@ -38,4 +42,7 @@ func (a *GaurdAlien) Init() {
 func (a *GaurdAlien) Damange() {
 }
 func (a *GaurdAlien) Heal() {
+}
+
+func (a *GaurdAlien) Roll() {
 }

@@ -30,19 +30,9 @@ type Games struct {
 
 var games = Games{}
 
-func tmp() {
-	//tmpShip := assets.Ship{}
-	//tmpShip.NewShip()
-	//fmt.Println(tmpShip.RenderHTML())
-
-	g := gamestate.Game{}
-	g.StartGame()
-	g.Listener()
-	fmt.Println("hello world")
-}
-
 func main() {
 	games.Progs = make(map[string]*gamestate.Game)
+	games.Players = make(map[string]*gamestate.Game)
 
 	port := flag.Int("port", 9779, "port the server runs on")
 	address := flag.String("address", "http://localhost", "address the server runs on")
@@ -83,6 +73,7 @@ func add_routes(mux *http.ServeMux) {
 	mux.HandleFunc("/game", SpawnGame)
 	mux.HandleFunc("/loop", LoopGames)
 	mux.HandleFunc("/action/{type}/{with}", Action)
+	mux.HandleFunc("/map", Map)
 }
 
 func ServeStatic(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +105,7 @@ func SpawnGame(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("created new key ", gamekey)
 	g := gamestate.Game{}
+	g.Ship.NewShip()
 	g.GameKey = gamekey
 	games.Progs[gamekey] = &g
 	games.Players[r.RemoteAddr] = &g
@@ -141,6 +133,14 @@ func Action(w http.ResponseWriter, r *http.Request) {
 	player := r.RemoteAddr
 	rgame := games.Players[player]
 	rgame.QueueAction(player, atype, intdonewith)
+}
+
+func Map(w http.ResponseWriter, r *http.Request) {
+	log.Printf("got /map request\n")
+	player := r.RemoteAddr
+	rgame := games.Players[player]
+	component := templ.Minimap(rgame.Ship)
+	component.Render(context.Background(), w)
 }
 
 func keygen(n int) string {

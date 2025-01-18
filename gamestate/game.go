@@ -12,6 +12,7 @@ type Game struct {
 	Actions       map[string]func()
 	QueuedActions map[string]func() bool
 	Players       map[string]assets.Player
+	Aliens        []assets.Alien
 	GameState
 }
 
@@ -56,6 +57,15 @@ func (g *Game) QueueAction(player string, atype string, donewith int) bool {
 		return true
 	}
 	return false
+}
+
+func (g *Game) Roll() {
+	for _, v := range g.QueuedActions {
+		v()
+	}
+	for _, v := range g.Aliens {
+		v.Roll()
+	}
 }
 
 func Use(player string) {

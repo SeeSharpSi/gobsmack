@@ -1,0 +1,34 @@
+package templ
+
+import "seesharpsi/gobsmack/assets"
+import "fmt"
+
+css grid(w int, h int) {
+	display: grid;
+	grid-template-columns: { templ.SafeCSSProperty(fmt.Sprint(w)) + " auto" };
+	grid-template-rows: { templ.SafeCSSProperty(fmt.Sprint(h))  + " auto" };
+}
+
+css box(i int, j int, room assets.Room) {
+	grid-row: { templ.SafeCSSProperty(fmt.Sprint(i+1)) };
+	grid-column: { templ.SafeCSSProperty(fmt.Sprint(j+1)) };
+	border-top: { "2px " + templ.SafeCSSProperty(room.Walls["north"].Render) };
+	border-bottom: { "2px " + templ.SafeCSSProperty(room.Walls["south"].Render) };
+	border-left: { "2px " + templ.SafeCSSProperty(room.Walls["east"].Render) };
+	border-right: { "2px " + templ.SafeCSSProperty(room.Walls["west"].Render) };
+	text-align: center;
+}
+
+templ Minimap(ship assets.Ship) {
+	<div class={ grid(ship.Width, ship.Height) }>
+		for i := range ship.Height {
+			for j := range ship.Width {
+				@Room(i, j, ship.Rooms[i][j])
+			}
+		}
+	</div>
+}
+
+templ Room(i int, j int, room assets.Room) {
+	<div class={ box(i, j, room) }>{ room.Render }</div>
+}

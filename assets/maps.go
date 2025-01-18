@@ -52,21 +52,6 @@ func (s *Ship) NewShip() {
 	s.Rooms = roomMatrix
 }
 
-func (s Ship) RenderHTML() string {
-	var str string
-	str = fmt.Sprintf("<div style='display: grid; grid-template-columns: %d auto; grid-template-rows: %d auto;'>", s.Width, s.Height)
-	for i := range s.Height {
-		for j := range s.Width {
-			currentRoom := s.Rooms[i][j]
-			str += fmt.Sprintf("<div style='grid-row: %d; grid-column: %d; border-top: 2px %s; border-bottom: 2px %s; border-left: 2px %s; border-right: 2px %s;'>", i+1, j+1, currentRoom.Walls["north"].Render, currentRoom.Walls["south"].Render, currentRoom.Walls["east"].Render, currentRoom.Walls["west"].Render)
-			str += currentRoom.Render
-			str += "</div>"
-		}
-	}
-	str += "</div>"
-	return str[:len(str)]
-}
-
 type Room struct {
 	AxisX, AxisY int
 	Type         string
@@ -74,6 +59,7 @@ type Room struct {
 	Contains     []Item
 	Walls        map[Direction]Wall
 	MaxAmmount   int
+	Lighting     bool
 }
 
 // Direction of either north, south, east, or west
@@ -138,6 +124,12 @@ func (r *Room) NewRoom(edges map[Direction]bool) {
 		if v {
 			r.Walls[Direction(k)] = WallTypes["edge"]
 		}
+	}
+	lighted := rand.IntN(2)
+	if lighted == 1 {
+		r.Lighting = true
+	} else {
+		r.Lighting = false
 	}
 }
 
