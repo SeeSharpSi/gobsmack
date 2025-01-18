@@ -150,22 +150,3 @@ func Room(i int, j int, room assets.Room) templ.Component {
 		return templ_7745c5c3_Err
 	})
 }
-
-func trustString(input string) templ.SafeCSSProperty {
-	return templ.SafeCSSProperty(input)
-}
-
-func RenderHTML(s assets.Ship) string {
-	var str string
-	str = fmt.Sprintf("<div style='display: grid; grid-template-columns: %d auto; grid-template-rows: %d auto;'>", s.Width, s.Height)
-	for i := range s.Height {
-		for j := range s.Width {
-			currentRoom := s.Rooms[i][j]
-			str += fmt.Sprintf("<div style='grid-row: %d; grid-column: %d; border-top: 2px %s; border-bottom: 2px %s; border-left: 2px %s; border-right: 2px %s;'>", i+1, j+1, currentRoom.Walls["north"].Render, currentRoom.Walls["south"].Render, currentRoom.Walls["east"].Render, currentRoom.Walls["west"].Render)
-			str += currentRoom.Render
-			str += "</div>"
-		}
-	}
-	str += "</div>"
-	return str[:len(str)]
-}

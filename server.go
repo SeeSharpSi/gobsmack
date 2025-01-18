@@ -74,6 +74,8 @@ func add_routes(mux *http.ServeMux) {
 	mux.HandleFunc("/loop", LoopGames)
 	mux.HandleFunc("/action/{type}/{with}", Action)
 	mux.HandleFunc("/map", Map)
+	mux.HandleFunc("/gameselect", GameSelect)
+	mux.HandleFunc("/join", JoinGameRequest)
 }
 
 func ServeStatic(w http.ResponseWriter, r *http.Request) {
@@ -141,6 +143,23 @@ func Map(w http.ResponseWriter, r *http.Request) {
 	rgame := games.Players[player]
 	component := templ.Minimap(rgame.Ship)
 	component.Render(context.Background(), w)
+}
+
+func GameSelect(w http.ResponseWriter, r *http.Request) {
+	log.Printf("got /gameselect request\n")
+	component := templ.GameSelect()
+	component.Render(context.Background(), w)
+}
+
+func JoinGameRequest(w http.ResponseWriter, r *http.Request) {
+	log.Printf("got /join request\n")
+	err := r.ParseForm()
+	// player := r.RemoteAddr
+	username := r.FormValue("username")
+	gamekey := r.FormValue("gamekey")
+	fmt.Printf("\nusername: %s\ngamekey: %s\n", username, gamekey)
+	if err != nil {
+	}
 }
 
 func keygen(n int) string {
