@@ -4,6 +4,7 @@ import "math/rand/v2"
 
 type Player struct {
 	// North South East West
+	Name       string
 	Facing     string
 	Alive      bool
 	TurnOver   bool
@@ -18,7 +19,8 @@ type Player struct {
 	Items    []Item
 }
 
-func (p *Player) Init(s Ship) {
+func (p *Player) Init(username string) {
+	p.Name = username
 	p.Alive = true
 	p.TurnOver = false
 }

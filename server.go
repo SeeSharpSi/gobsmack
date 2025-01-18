@@ -16,6 +16,7 @@ import (
 	"unsafe"
 
 	// "seesharpsi/gobsmack/assets"
+	"seesharpsi/gobsmack/assets"
 	"seesharpsi/gobsmack/gamestate"
 	"seesharpsi/gobsmack/templ"
 )
@@ -71,7 +72,6 @@ func add_routes(mux *http.ServeMux) {
 	mux.HandleFunc("/static/{file}", ServeStatic)
 	mux.HandleFunc("/test", GetTest)
 	mux.HandleFunc("/game", SpawnGame)
-	mux.HandleFunc("/loop", LoopGames)
 	mux.HandleFunc("/action/{type}/{with}", Action)
 	mux.HandleFunc("/map", Map)
 	mux.HandleFunc("/gameselect", GameSelect)
@@ -107,21 +107,10 @@ func SpawnGame(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("created new key ", gamekey)
 	g := gamestate.Game{}
-	g.Ship.NewShip()
-	g.GameKey = gamekey
+	g.Init(gamekey)
 	games.Progs[gamekey] = &g
-	games.Players[r.RemoteAddr] = &g
-}
-
-func LoopGames(w http.ResponseWriter, r *http.Request) {
-	log.Printf("got /loop request\n")
-	component := templ.Test()
-	component.Render(context.Background(), w)
-	for _, v := range games.Progs {
-		fmt.Printf("\n%+v\n", v)
-		v.StartGame()
-	}
-	fmt.Printf("\n%+v\n", games)
+	// this should be in final version, but isn't for testing
+	// games.Players[r.RemoteAddr] = &g
 }
 
 func Action(w http.ResponseWriter, r *http.Request) {
@@ -154,11 +143,31 @@ func GameSelect(w http.ResponseWriter, r *http.Request) {
 func JoinGameRequest(w http.ResponseWriter, r *http.Request) {
 	log.Printf("got /join request\n")
 	err := r.ParseForm()
-	// player := r.RemoteAddr
+	if err != nil {
+		fmt.Fprint(w, "error parsing form")
+	}
+	player := r.RemoteAddr
 	username := r.FormValue("username")
 	gamekey := r.FormValue("gamekey")
-	fmt.Printf("\nusername: %s\ngamekey: %s\n", username, gamekey)
-	if err != nil {
+	g1, ok1 := games.Players[player]
+	g2, ok2 := games.Progs[gamekey]
+	if ok1 && ok2 {
+		if g1 == g2 {
+			// currently does nothing with username if it's different than before
+			fmt.Fprint(w, "<div hx-get='/map' hx-trigger='load' hx-target='body'></div>")
+		} else {
+			fmt.Fprint(w, "You're already in a different game")
+		}
+	} else if ok2 {
+		games.Players[player] = g2
+		newPlayer := assets.Player{}
+		newPlayer.Init(username)
+		g2.Players[player] = newPlayer
+		fmt.Fprint(w, "<div hx-get='/map' hx-trigger='load' hx-target='body'></div>")
+	} else if ok1 {
+		fmt.Fprint(w, "Game doesn't exist 2")
+	} else {
+		fmt.Fprint(w, "Game doesn't exist")
 	}
 }
 

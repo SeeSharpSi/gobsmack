@@ -18,7 +18,7 @@ templ GameSelect() {
 		</head>
 		<body>
 			<h1>Game Select</h1>
-			<form action="/join">
+			<form hx-post="/join" hx-target="#response">
 				<label for="gamekey">Game Key</label>
 				<input type="text" name="gamekey" value=""/>
 				<br/>
@@ -27,6 +27,7 @@ templ GameSelect() {
 				<br/>
 				<input type="submit" value="Submit"/>
 			</form>
+			<div id="response"></div>
 		</body>
 	</html>
 }

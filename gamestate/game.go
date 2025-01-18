@@ -13,7 +13,16 @@ type Game struct {
 	QueuedActions map[string]func() bool
 	Players       map[string]assets.Player
 	Aliens        []assets.Alien
-	GameState
+	Ship          assets.Ship
+}
+
+func (g *Game) Init(gamekey string) {
+	g.Actions = make(map[string]func())
+	g.Players = make(map[string]assets.Player)
+	g.GameKey = gamekey
+	ship := assets.Ship{}
+	ship.NewShip()
+	g.Ship = ship
 }
 
 func (g *Game) StartGame() {
