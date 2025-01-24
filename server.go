@@ -76,6 +76,8 @@ func add_routes(mux *http.ServeMux) {
 	mux.HandleFunc("/map", Map)
 	mux.HandleFunc("/gameselect", GameSelect)
 	mux.HandleFunc("/join", JoinGameRequest)
+	mux.HandleFunc("/reloadclient", JoinGameRequest)
+	mux.HandleFunc("/pregame", JoinGameRequest)
 }
 
 func ServeStatic(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +156,7 @@ func JoinGameRequest(w http.ResponseWriter, r *http.Request) {
 	if ok1 && ok2 {
 		if g1 == g2 {
 			// currently does nothing with username if it's different than before
-			fmt.Fprint(w, "<div hx-get='/map' hx-trigger='load' hx-target='body'></div>")
+			fmt.Fprint(w, "<div hx-get='/pregame' hx-trigger='load' hx-target='body'></div>")
 		} else {
 			fmt.Fprint(w, "You're already in a different game")
 		}
@@ -163,12 +165,18 @@ func JoinGameRequest(w http.ResponseWriter, r *http.Request) {
 		newPlayer := assets.Player{}
 		newPlayer.Init(username)
 		g2.Players[player] = newPlayer
-		fmt.Fprint(w, "<div hx-get='/map' hx-trigger='load' hx-target='body'></div>")
+		fmt.Fprint(w, "<div hx-get='/pregame' hx-trigger='load' hx-target='body'></div>")
 	} else if ok1 {
-		fmt.Fprint(w, "Game doesn't exist 2")
+		fmt.Fprint(w, "You're currently in a game. Retype correct key to join...")
 	} else {
 		fmt.Fprint(w, "Game doesn't exist")
 	}
+}
+
+func preGame(w http.ResponseWriter, r *http.Request) {
+	log.Printf("got /pregame request\n")
+	component := templ.PreGame()
+	component.Render(context.Background(), w)
 }
 
 func keygen(n int) string {
@@ -221,4 +229,24 @@ func printContextInternals(ctx interface{}, inner bool) {
 	} else {
 		fmt.Printf("context is empty (int)\n")
 	}
+}
+
+func reloadClient(w http.ResponseWriter, r *http.Request) {
+	// Set CORS headers to allow all origins. You may want to restrict this to specific origins in a production environment.
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Expose-Headers", "Content-Type")
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	// Simulate sending events (you can replace this with real data)
+	for i := 0; i < 10; i++ {
+		fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf("Event %d", i))
+		time.Sleep(2 * time.Second)
+		w.(http.Flusher).Flush()
+	}
+
+	// Simulate closing the connection
+	<-r.Context().Done()
 }

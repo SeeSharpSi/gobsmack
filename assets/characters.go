@@ -3,8 +3,8 @@ package assets
 import "math/rand/v2"
 
 type Player struct {
+	Name string
 	// North South East West
-	Name       string
 	Facing     string
 	Alive      bool
 	TurnOver   bool
@@ -17,6 +17,12 @@ type Player struct {
 	// x, y T if explored, F if not
 	Explored [][]bool
 	Items    []Item
+	// still need a screenrender function. not sure where to put it
+	// it could go here? or could exist on the game? WAIT it should exist on the game
+	// and iterate over each player... or then it could exist on each player and
+	// still be iterated over
+	// actually, it should exist on game because game can access everything (aliens, ship, etc)
+	CurrentScreen string
 }
 
 func (p *Player) Init(username string) {
